@@ -10,6 +10,9 @@
 		FB81031D1B4A24F900268DED /* ArabicDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = FB81031C1B4A24F900268DED /* ArabicDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB8103231B4A24F900268DED /* ArabicDictionary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB8103171B4A24F900268DED /* ArabicDictionary.framework */; };
 		FB81032A1B4A24F900268DED /* ArabicDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8103291B4A24F900268DED /* ArabicDictionaryTests.swift */; };
+		FBD7D0911B52321300D6A71A /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD7D0901B52321300D6A71A /* StreamReader.swift */; };
+		FBD7D0931B52331500D6A71A /* BuckwalterParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD7D0921B52331500D6A71A /* BuckwalterParser.swift */; };
+		FBE54EF61B51FA5B0007951A /* ArabicDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE54EF51B51FA5B0007951A /* ArabicDictionary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +32,9 @@
 		FB8103221B4A24F900268DED /* ArabicDictionaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArabicDictionaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB8103281B4A24F900268DED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB8103291B4A24F900268DED /* ArabicDictionaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArabicDictionaryTests.swift; sourceTree = "<group>"; };
+		FBD7D0901B52321300D6A71A /* StreamReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
+		FBD7D0921B52331500D6A71A /* BuckwalterParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuckwalterParser.swift; sourceTree = "<group>"; };
+		FBE54EF51B51FA5B0007951A /* ArabicDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArabicDictionary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +79,9 @@
 			children = (
 				FB81031C1B4A24F900268DED /* ArabicDictionary.h */,
 				FB81031A1B4A24F900268DED /* Supporting Files */,
+				FBE54EF51B51FA5B0007951A /* ArabicDictionary.swift */,
+				FBD7D0901B52321300D6A71A /* StreamReader.swift */,
+				FBD7D0921B52331500D6A71A /* BuckwalterParser.swift */,
 			);
 			path = ArabicDictionary;
 			sourceTree = "<group>";
@@ -209,6 +218,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBD7D0931B52331500D6A71A /* BuckwalterParser.swift in Sources */,
+				FBD7D0911B52321300D6A71A /* StreamReader.swift in Sources */,
+				FBE54EF61B51FA5B0007951A /* ArabicDictionary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,6 +335,7 @@
 		FB81032E1B4A24F900268DED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -332,12 +345,14 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		FB81032F1B4A24F900268DED /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -399,6 +414,7 @@
 				FB81032F1B4A24F900268DED /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		FB8103301B4A24F900268DED /* Build configuration list for PBXNativeTarget "ArabicDictionaryTests" */ = {
 			isa = XCConfigurationList;
@@ -407,6 +423,7 @@
 				FB8103321B4A24F900268DED /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
