@@ -8,4 +8,8 @@ Pod::Spec.new do |s|
   s.source              = { :git => 'https://github.com/ggurantz/ArabicDictionary.git' }
   s.source_files        = "ArabicDictionary.h"
   s.public_header_files = "ArabicDictionary.h"
+
+  s.subspec 'Core' do |ss|
+    ss.source_files	= "Classes/**/*.{h,m,swift}"
+  end
 end
