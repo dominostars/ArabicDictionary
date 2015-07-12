@@ -10,6 +10,7 @@ Pod::Spec.new do |s|
   s.public_header_files = "ArabicDictionary.h"
 
   s.subspec 'Core' do |ss|
-    ss.source_files	= "Classes/**/*.{h,m,swift}"
+    ss.source_files	    = "Classes/**/*.{h,m,swift}"
+    ss.resources        = "Resources/*"
   end
 end

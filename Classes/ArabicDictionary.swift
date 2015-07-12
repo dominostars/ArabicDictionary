@@ -19,12 +19,18 @@ public struct ArabicDictionary {
         self.stems = stems
     }
     
-    public init?(filePath: String) {
+    init?(filePath: String) {
         if let dictionary = loadDictionaryFromFile(filePath) {
             self = dictionary
         } else {
             return nil
         }
+    }
+    
+    public init() {
+        let bundle = NSBundle(forClass: StreamReader.self)
+        let filePath = bundle.pathForResource("dictstems", ofType: nil)
+        self = loadDictionaryFromFile(filePath!)!
     }
 }
 

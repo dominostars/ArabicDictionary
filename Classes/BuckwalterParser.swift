@@ -22,7 +22,7 @@ enum ParsedString {
     case Unknown(String)
     
     init(line: String) {
-        let result = split(line, maxSplit: 1, allowEmptySlices: true, isSeparator: { $0 == " " })
+        let result = line.componentsSeparatedByString(" ")
         let mark = BuckwalterMark(rawValue: result.first ?? "")
         let value = result.count > 1 ? result[1] : ""
         
@@ -36,7 +36,7 @@ enum ParsedString {
                 self = .Lemma(value)
             }
         } else {
-            let attributes = split(line, isSeparator: { $0 == "\t" })
+            let attributes = line.componentsSeparatedByString("\t")
             if attributes.count > 3 {
                 self = .Word(
                     withVowels: attributes[0],
@@ -52,20 +52,25 @@ enum ParsedString {
     }
 }
 
-func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDictionary {
+func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
     var stems = [Stem]()
     var stemLetters = ""
     var lemmas = [Lemma]()
     var lemmaTitle = ""
     var words = [Word]()
-    while let line = streamReader.nextLine() {
+    
+    let completeLemma: () -> Void = {
+        if count(lemmaTitle) > 0 {
+            lemmas.append(Lemma(title: lemmaTitle, words: words))
+            lemmaTitle = ""
+            words = []
+        }
+    }
+    
+    for line in lines {
         switch (ParsedString(line: line)) {
         case let .Comment(comment):
-            if count(lemmaTitle) > 0 {
-                lemmas.append(Lemma(title: lemmaTitle, words: words))
-                lemmaTitle = ""
-                words = []
-            }
+            completeLemma()
             break
         case let .Stem(stem):
             if count(stemLetters) > 0 {
@@ -75,6 +80,7 @@ func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDiction
             stemLetters = stem
             break
         case let .Lemma(lemma):
+            completeLemma()
             lemmaTitle = lemma
             break
         case let .Word(withVowels, withoutVowels, category, definition):
@@ -93,11 +99,8 @@ func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDiction
 }
 
 func loadDictionaryFromFile(filePath: String) -> ArabicDictionary? {
-    if let streamReader = StreamReader(path: filePath) {
-        let dictionary = loadDictionaryFromStreamReader(streamReader)
-        streamReader.close()
-        return dictionary
-    } else {
-        return nil
-    }
+    NSString(contentsOfFile: filePath, encoding: NSWindowsCP1252StringEncoding, error: nil)
+    let file = NSString(contentsOfFile: filePath, encoding: NSWindowsCP1252StringEncoding, error: nil)
+    let fileArray = file?.componentsSeparatedByString("\n") as? [String]
+    return fileArray.map(loadDictionaryFromFileLines)
 }
