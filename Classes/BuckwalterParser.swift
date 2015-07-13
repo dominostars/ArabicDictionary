@@ -18,7 +18,7 @@ enum ParsedString {
     case Comment(String)
     case Stem(String)
     case Lemma(String)
-    case Word(withVowels: String, withoutVowels: String, category: String, definition: String)
+    case Word(withVowels: String, withoutVowels: String, category: String, definition: String, pos: String?)
     case Unknown(String)
     
     init(line: String) {
@@ -38,17 +38,75 @@ enum ParsedString {
         } else {
             let attributes = line.componentsSeparatedByString("\t")
             if attributes.count > 3 {
+                let definitionComponents = attributes[3].componentsSeparatedByString("     ")
                 self = .Word(
                     withVowels: attributes[0],
                     withoutVowels: attributes[1],
                     category: attributes[2],
-                    definition: attributes[3]
-                    
+                    definition: definitionComponents.first ?? attributes[3],
+                    pos: definitionComponents.count > 1 ? definitionComponents.last : nil
                 )
             } else {
                 self = .Unknown(line)
             }
         }
+    }
+}
+
+let posReplacement: [String: PartOfSpeech] = [
+    "ADJ": .Adjective,
+    "ADV": .Adverb,
+    "ABBREV": .Abbreviation,
+    "PREP": .Preposition,
+    "NEG_PART": .NegativeParticle,
+    "CONJ": .Conjunction,
+    "INTERJ": .Interjection,
+    "NOUN_PROP": .ProperNoun,
+    "FUNC_WORD": .FunctionWord,
+    "REL_PRON": .RelativePronoun,
+    "DET": .Determiner,
+    "DEM_PRON": .DemonstrativePronoun,
+    "INTERROG_PART": .InterrogativePronoun,
+    "FUT_PART": .FutureParticle,
+]
+
+func partOfSpeechFromMorphalogicalCategory(category: String) -> PartOfSpeech? {
+    if category == "Nprop" {
+        return .ProperNoun
+    } else if category.hasPrefix("F") {
+        return .FunctionWord
+    } else if category.hasPrefix("IV") {
+        return .ImperfectVerb
+    } else if category.hasPrefix("PV") {
+        return .PerfectVerb
+    } else if category.hasPrefix("CV") {
+        return .ImperativeVerb
+    } else if category.hasPrefix("N") {
+        return .Noun
+    } else {
+        return nil
+    }
+}
+
+func partOfSpeechFromCategory(category: String, #posAttribute: String?) -> PartOfSpeech {
+    return partOfSpeechFromAttribute(posAttribute) ??
+        partOfSpeechFromMorphalogicalCategory(category) ??
+        .Unknown
+}
+
+func partOfSpeechFromAttribute(posAttribute: String?) -> PartOfSpeech? {
+    if
+        let posAttribute = posAttribute,
+        let slashRange = posAttribute.rangeOfString("/"),
+        let endArgumentRange = posAttribute.rangeOfString("</pos>")
+    {
+        let posRange = Range(start: slashRange.endIndex,
+            end: endArgumentRange.startIndex)
+        let key = posAttribute.substringWithRange(posRange)
+        
+        return posReplacement[key]
+    } else {
+        return nil
     }
 }
 
@@ -58,7 +116,6 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
     var lemmas = [Lemma]()
     var lemmaTitle = ""
     var words = [Word]()
-    var unknown = 0
     
     let completeLemma: () -> Void = {
         if count(lemmaTitle) > 0 {
@@ -84,29 +141,20 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
             completeLemma()
             lemmaTitle = lemma
             break
-        case let .Word(withVowels, withoutVowels, category, definition):
-            let categories: [MorphologicalCategory] = category.componentsSeparatedByString("_").map {
-                if let category = MorphologicalCategory(rawValue: $0) {
-                    return category
-                } else {
-                    println($0)
-                    unknown++
-                    return .Unknown
-                }
-            }
-            
+        case let .Word(withVowels, withoutVowels, category, definition, posAttribute):
             words.append(Word(
                 withShortVowels: withVowels,
                 withoutShortVowels: withoutVowels,
                 morphologicalCategory: category,
-                definition: definition))
+                definition: definition,
+                partOfSpeech: partOfSpeechFromCategory(category, posAttribute: posAttribute))
+            )
             break
         case let .Unknown(line):
             break
         }
     }
     
-    println("Unknown: \(unknown)")
     return ArabicDictionary(stems: stems)
 }
 
