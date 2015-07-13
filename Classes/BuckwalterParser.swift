@@ -40,8 +40,8 @@ enum ParsedString {
             if attributes.count > 3 {
                 let definitionComponents = attributes[3].componentsSeparatedByString("     ")
                 self = .Word(
-                    withVowels: attributes[0],
-                    withoutVowels: attributes[1],
+                    withVowels: attributes[1],
+                    withoutVowels: attributes[0],
                     category: attributes[2],
                     definition: definitionComponents.first ?? attributes[3],
                     pos: definitionComponents.count > 1 ? definitionComponents.last : nil
