@@ -88,7 +88,7 @@ func partOfSpeechFromMorphalogicalCategory(category: String) -> PartOfSpeech? {
     }
 }
 
-func partOfSpeechFromCategory(category: String, #posAttribute: String?) -> PartOfSpeech {
+func partOfSpeechFromCategory(category: String, posAttribute: String?) -> PartOfSpeech {
     return partOfSpeechFromAttribute(posAttribute) ??
         partOfSpeechFromMorphalogicalCategory(category) ??
         .Unknown
@@ -118,7 +118,7 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
     var words = [Word]()
     
     let completeLemma: () -> Void = {
-        if count(lemmaTitle) > 0 {
+        if lemmaTitle.characters.count > 0 {
             lemmas.append(Lemma(title: lemmaTitle, words: words))
             lemmaTitle = ""
             words = []
@@ -127,11 +127,11 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
     
     for line in lines {
         switch (ParsedString(line: line)) {
-        case let .Comment(comment):
+        case .Comment(_):
             completeLemma()
             break
         case let .Stem(stem):
-            if count(stemLetters) > 0 {
+            if stemLetters.characters.count > 0 {
                 stems.append(Stem(letters: stemLetters, lemmas: lemmas))
                 lemmas = []
             }
@@ -150,7 +150,7 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
                 partOfSpeech: partOfSpeechFromCategory(category, posAttribute: posAttribute))
             )
             break
-        case let .Unknown(line):
+        case .Unknown(_):
             break
         }
     }
@@ -159,8 +159,11 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
 }
 
 func loadDictionaryFromFile(filePath: String) -> ArabicDictionary? {
-    NSString(contentsOfFile: filePath, encoding: NSWindowsCP1252StringEncoding, error: nil)
-    let file = NSString(contentsOfFile: filePath, encoding: NSWindowsCP1252StringEncoding, error: nil)
-    let fileArray = file?.componentsSeparatedByString("\n") as? [String]
-    return fileArray.map(loadDictionaryFromFileLines)
+    do {
+        let file = try NSString(contentsOfFile: filePath, encoding:NSWindowsCP1252StringEncoding)
+        let fileArray = file.componentsSeparatedByString("\n")
+        return loadDictionaryFromFileLines(fileArray)
+    } catch {
+        return nil
+    }
 }

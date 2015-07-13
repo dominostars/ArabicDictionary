@@ -52,7 +52,7 @@ public struct Word {
     public let partOfSpeech: PartOfSpeech
 }
 
-public enum PartOfSpeech: Printable {
+public enum PartOfSpeech: CustomStringConvertible {
     case Adjective
     case Adverb
     case Abbreviation

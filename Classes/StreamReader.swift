@@ -61,7 +61,7 @@ public class StreamReader  {
     
     private func rangeOfDelimiter() -> NSRange {
         return self.buffer.rangeOfData(self.delimData,
-            options: nil,
+            options: [],
             range: NSMakeRange(0, self.buffer.length))
     }
     
