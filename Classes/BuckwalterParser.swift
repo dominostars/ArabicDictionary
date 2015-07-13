@@ -58,6 +58,7 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
     var lemmas = [Lemma]()
     var lemmaTitle = ""
     var words = [Word]()
+    var unknown = 0
     
     let completeLemma: () -> Void = {
         if count(lemmaTitle) > 0 {
@@ -84,6 +85,16 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
             lemmaTitle = lemma
             break
         case let .Word(withVowels, withoutVowels, category, definition):
+            let categories: [MorphologicalCategory] = category.componentsSeparatedByString("_").map {
+                if let category = MorphologicalCategory(rawValue: $0) {
+                    return category
+                } else {
+                    println($0)
+                    unknown++
+                    return .Unknown
+                }
+            }
+            
             words.append(Word(
                 withShortVowels: withVowels,
                 withoutShortVowels: withoutVowels,
@@ -95,6 +106,7 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
         }
     }
     
+    println("Unknown: \(unknown)")
     return ArabicDictionary(stems: stems)
 }
 
