@@ -71,7 +71,7 @@ let posReplacement: [String: PartOfSpeech] = [
 ]
 
 func partOfSpeechFromMorphalogicalCategory(category: String) -> PartOfSpeech? {
-    if category == "Nprop" {
+    if category == "Nprop" || category == "N0" {
         return .ProperNoun
     } else if category.hasPrefix("F") {
         return .FunctionWord
@@ -110,7 +110,7 @@ func partOfSpeechFromAttribute(posAttribute: String?) -> PartOfSpeech? {
     }
 }
 
-func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
+func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDictionary {
     var stems = [Stem]()
     var stemLetters = ""
     var lemmas = [Lemma]()
@@ -125,13 +125,13 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
         }
     }
     
-    for line in lines {
+    while let line = streamReader.nextLine() {
         switch (ParsedString(line: line)) {
         case .Comment(_):
             completeLemma()
             break
         case let .Stem(stem):
-            if stemLetters.characters.count > 0 {
+            if stemLetters.characters.count > 0 && lemmas.count > 0 {
                 stems.append(Stem(letters: stemLetters, lemmas: lemmas))
                 lemmas = []
             }
@@ -159,11 +159,6 @@ func loadDictionaryFromFileLines(lines: [String]) -> ArabicDictionary {
 }
 
 func loadDictionaryFromFile(filePath: String) -> ArabicDictionary? {
-    do {
-        let file = try NSString(contentsOfFile: filePath, encoding:NSWindowsCP1252StringEncoding)
-        let fileArray = file.componentsSeparatedByString("\n")
-        return loadDictionaryFromFileLines(fileArray)
-    } catch {
-        return nil
-    }
+    let streamReader = StreamReader(path: filePath, encoding: NSWindowsCP1252StringEncoding)
+    return streamReader.map(loadDictionaryFromStreamReader)
 }

@@ -9,6 +9,9 @@
 import Foundation
 
 public struct ArabicDictionary {
+    public static let sharedDictionary = ArabicDictionary()
+    public static var stems: [Stem] { return self.sharedDictionary.stems }
+    
     public let stems: [Stem]
     
     public func stemWithLetters(stemLetters: String) -> Stem? {
@@ -27,7 +30,7 @@ public struct ArabicDictionary {
         }
     }
     
-    public init() {
+    init() {
         let bundle = NSBundle(forClass: StreamReader.self)
         let filePath = bundle.pathForResource("dictstems", ofType: nil)
         self = loadDictionaryFromFile(filePath!)!
@@ -42,6 +45,11 @@ public struct Stem {
 public struct Lemma {
     public let title: String
     public let words: [Word]
+    
+    public var isVerb: Bool {
+        return self.words.filter { $0.partOfSpeech == .PerfectVerb || $0.partOfSpeech == .ImperfectVerb }
+        .count > 0
+    }
 }
 
 public struct Word {
