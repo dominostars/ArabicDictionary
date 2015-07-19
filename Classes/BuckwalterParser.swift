@@ -115,7 +115,7 @@ func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDiction
     var stemLetters = ""
     var lemmas = [Lemma]()
     var lemmaTitle = ""
-    var words = [Word]()
+    var words = [ArabicWord]()
     
     let completeLemma: () -> Void = {
         if lemmaTitle.characters.count > 0 {
@@ -142,7 +142,7 @@ func loadDictionaryFromStreamReader(streamReader: StreamReader) -> ArabicDiction
             lemmaTitle = lemma
             break
         case let .Word(withVowels, withoutVowels, category, definition, posAttribute):
-            words.append(Word(
+            words.append(ArabicWord(
                 withShortVowels: withVowels,
                 withoutShortVowels: withoutVowels,
                 morphologicalCategory: category,

@@ -44,20 +44,21 @@ public struct Stem {
 
 public struct Lemma {
     public let title: String
-    public let words: [Word]
-    
-    public var isVerb: Bool {
-        return self.words.filter { $0.partOfSpeech == .PerfectVerb || $0.partOfSpeech == .ImperfectVerb }
-        .count > 0
-    }
+    public let words: [ArabicWord]
 }
 
-public struct Word {
+public struct ArabicWord {
     public let withShortVowels: String
     public let withoutShortVowels: String
     public let morphologicalCategory: String
     public let definition: String
     public let partOfSpeech: PartOfSpeech
+    
+    public var isVerb: Bool {
+        return (self.partOfSpeech == .ImperfectVerb ||
+            self.partOfSpeech == .PerfectVerb ||
+            self.partOfSpeech == .ImperativeVerb)
+    }
 }
 
 public enum PartOfSpeech: CustomStringConvertible {

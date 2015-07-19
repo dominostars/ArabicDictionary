@@ -22,4 +22,15 @@ public extension Transliterator {
             }
         })
     }
+    
+    public static func toTransliteratedCharacter(arabicCharacter: ArabicCharacter) -> Character {
+        for (key, value) in self.table {
+            if value == arabicCharacter {
+                return key
+            }
+        }
+        
+        assertionFailure()
+        return "A"
+    }
 }
