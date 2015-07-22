@@ -2,7 +2,7 @@
 //  ArabicVerb.swift
 //  Pods
 //
-//  Created by Gilad Gurantz on 7/18/15.
+//  Created by Gilad Gurantz on 7/%@8/%@5.
 //
 //
 
@@ -16,7 +16,7 @@ public extension ArabicDictionary {
 
 public extension Stem {
     public var verbCollection: ArabicVerbCollection? {
-        let verbs = self.lemmas.mapFilterNil{ $0.verb }
+        let verbs = self.lemmas.mapFilterNil{ $0.verbAssumingRootLetters(self.letters) }
         if !verbs.isEmpty {
             return ArabicVerbCollection(stemLetters: self.letters, verbs: verbs)
         } else {
@@ -26,7 +26,7 @@ public extension Stem {
 }
 
 public extension Lemma {
-    public var verb: ArabicVerb? {
+    public func verbAssumingRootLetters(rootLetters: String) -> ArabicVerb? {
         var perfect: String?
         var imperfect: String?
         var definition: String?
@@ -51,7 +51,7 @@ public extension Lemma {
             perfect = perfect,
             imperfect = imperfect,
             definition = definition,
-            form = ArabicVerbForm(perfectVerbConstruction: perfect)
+            form = ArabicVerbForm(rootLetters: rootLetters, perfectVerbConstruction: perfect)
         {
             return ArabicVerb(form: form, perfect: perfect, imperfect: imperfect, definition: definition)
         } else {
@@ -77,42 +77,56 @@ public struct ArabicVerb {
     public let definition: String
     
     public var perfectInHeConstruction: String {
-        return "\(self.perfect)a"
+        return BuckwalterTransliterator.toArabic("\(self.perfect)a")
     }
 }
 
-public enum ArabicVerbForm {
-    case I
-    case II
-    case III
-    case IV
-    case V
-    case VI
-    case VII
-    case VIII
-    case IX
-    case X
+extension String {
+    func locationOfString(inputString: String) -> Int {
+        if let range = self.rangeOfString(inputString) {
+            return distance(self.startIndex, range.startIndex)
+        } else {
+            return NSNotFound
+        }
+    }
+}
+
+public enum ArabicVerbForm: Int {
+    case I = 1
+    case II = 2
+    case III = 3
+    case IV = 4
+    case V = 5
+    case VI = 6
+    case VII = 7
+    case VIII = 8
+    case IX = 9
+    case X = 10
     
-    /*
-    ;--- ktb
-    ;; katab-u_1
-    ktb	katab	PV	write
-    ktb	kotub	IV	write
-    ktb	kutib	PV_Pass	be written;be fated;be destined
-    ktb	kotab	IV_Pass_yu	be written;be fated;be destined
-    ;; kAtab_1
-    kAtb	kAtab	PV	correspond with
-    */
+    static let twoRootLetterFormMappings: [String: ArabicVerbForm] = [
+        "%@A%@": .I,
+        ">a%@A%@": .IV,
+        "{ino%@A%@": .VII,
+        "{i%@otA%@": .VIII,
+        "{isota%@A%@": .X,
+    ]
     
-    init?(perfectVerbConstruction: String) {
-        let formMappings: [String: ArabicVerbForm] = [
-            "1a2a3": .I,
-            "1a2i3": .I,
-            "1a2u3": .I,
-            "1A2": .I,
-            "1A2a3": .III,
-        ]
-        
+    static let threeRootLetterFormMappings: [String: ArabicVerbForm] = [
+        "%@a%@a%@": .I,
+        "%@a%@i%@": .I,
+        "%@a%@u%@": .I,
+        "%@a%@~a%@": .II,
+        "%@A%@a%@": .III,
+        ">a%@o%@a%@": .IV,
+        "ta%@a%@~a%@": .V,
+        "ta%@A%@a%@": .VI,
+        "{ino%@a%@a%@": .VII,
+        "{i%@ota%@a%@": .VIII,
+        "{i%@o%@a%@~": .IX,
+        "{isota%@o%@a%@": .X,
+    ]
+    
+    static var transliteratedVowels: [Character] = {
         let vowels = [
             ArabicCharacter.Alef,
             ArabicCharacter.Fatha,
@@ -121,23 +135,55 @@ public enum ArabicVerbForm {
             ArabicCharacter.Waw,
             ArabicCharacter.Damma,
             ArabicCharacter.Shadda,
+            ArabicCharacter.Sukun,
         ]
         
-        let transliteratedVowels = vowels.map(BuckwalterTransliterator.toTransliteratedCharacter)
-        var rootLetterIndex = 1
-        let converted: [Character] = perfectVerbConstruction.characters.map { character in
-            if transliteratedVowels.contains({ $0 == character }) {
-                return character
-            } else {
-                return Character(String(rootLetterIndex++))
-            }
+        return vowels.map(BuckwalterTransliterator.toTransliteratedCharacter)
+    }()
+    
+    static func possibleFormsFromRootLetters(rootLetters: String) -> [String] {
+        return []
+    }
+    
+    init?(rootLetters: String, perfectVerbConstruction: String) {
+        if rootLetters.characters.count != 3 {
+            return nil
         }
         
-        if let form = formMappings[String(converted)]{
-            self = form
+        let wordLength = perfectVerbConstruction.characters.count
+        if wordLength == 5 || (wordLength == 3 && perfectVerbConstruction.rangeOfString("A") != nil) {
+            self = .I
+        } else if wordLength == 6 && perfectVerbConstruction.locationOfString("~") == 3 {
+            self = .II
+        } else if wordLength == 6 && perfectVerbConstruction.locationOfString("A") == 1 {
+            self = .III
+        } else if perfectVerbConstruction.hasPrefix("ta") {
+            if perfectVerbConstruction.locationOfString("~") == 5 {
+                self = .V
+            } else if perfectVerbConstruction.locationOfString("A") == 3 ||
+                perfectVerbConstruction.locationOfString("|") == 2 {
+                self = .VI
+            } else {
+                return nil
+            }
+        } else if perfectVerbConstruction.hasPrefix("{isota") {
+            self = .X
+        } else if perfectVerbConstruction.hasPrefix("{ino") {
+            self = .VII
+        } else if perfectVerbConstruction.hasPrefix("{i") {
+            if perfectVerbConstruction[advance(perfectVerbConstruction.endIndex, -1)] == "~" {
+                self = .IX
+            } else {
+                self = .VIII
+            }
+        } else if perfectVerbConstruction.hasPrefix(">a") &&
+            (perfectVerbConstruction.locationOfString("o") == 3 ||
+                perfectVerbConstruction.locationOfString("A") == 3) {
+            self = .IV
         } else {
             return nil
         }
+        
     }
     
     public var stringValue: String {
