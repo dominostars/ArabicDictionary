@@ -64,6 +64,7 @@ public extension Lemma {
 public struct ArabicVerbCollection {
     public let stemLetters: String
     public let verbs: [ArabicVerb]
+    public var sortedVerbs: [ArabicVerb] { return self.verbs }
     
     public func verbWithForm(form: ArabicVerbForm) -> ArabicVerb? {
         return self.verbs.filter{ $0.form == form }.first
